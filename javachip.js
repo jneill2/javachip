@@ -1,7 +1,5 @@
-// const unchecked = 'check_box_outline_blank';
-// const checked = 'check_box';
-const checked = 'radio_button_checked';
-const unchecked = 'radio_button_unchecked';
+const radioChecked = 'radio_button_checked';
+const radioUnchecked = 'radio_button_unchecked';
 const play_button = 'play_circle_outline';
 const pause_button = 'pause_circle_outline';
 // function practice(x) {
@@ -202,7 +200,7 @@ function reload_section(container) {
         $(this).val('').removeClass('correct').removeClass('incorrect');
     });
     $(container).find('box').each(function () {
-        $(this).html(unchecked).removeClass('correct').removeClass('incorrect');
+        $(this).html(radioUnchecked).removeClass('correct').removeClass('incorrect');
         
     });
     $(container).find('lex').each(function () {
@@ -356,7 +354,7 @@ function checkbox(prop, isChoose) {
     for (x in chbox_arr) {
         let box = document.createElement('box');
         box.className = 'material-icons'
-        box.innerHTML = unchecked;
+        box.innerHTML = radioUnchecked;
         let checkbox_el = document.createElement('checkbox');
         if (typeof chbox_arr[x] == 'string') {
             checkbox_el.innerText = chbox_arr[x];
@@ -366,15 +364,15 @@ function checkbox(prop, isChoose) {
         }
         $(box).on('click', function() {
             if (isChoose == 'choose') {
-                $(this).parent().parent().find('box').removeClass('correct').html(unchecked);
-                $(this).parent().parent().find('box').removeClass('incorrect').html(unchecked);
+                $(this).parent().parent().find('box').removeClass('correct').html(radioUnchecked);
+                $(this).parent().parent().find('box').removeClass('incorrect').html(radioUnchecked);
             }
             if ($(this).hasClass('incorrect') || $(this).hasClass('correct')) {
                 $(this).removeClass('correct');
                 $(this).removeClass('incorrect');
-                $(this).text(unchecked);
+                $(this).text(radioUnchecked);
             } else {
-                $(this).text(checked);
+                $(this).text(radioChecked);
                 if (this.hasAttribute('answer')) {
                     $(this).addClass('correct');
                 } else {
