@@ -1,0 +1,268 @@
+body {
+    font-family: sans-serif;
+    user-select: none;
+    margin-bottom: 100px;
+}
+h1, section {
+    background-color: whitesmoke;
+    padding: 25px;
+    margin: 20px;
+    border-radius: 7px;
+}
+.feedback section.completed {background-color: #CEF6EC}
+refresh,restore_page {float: right; cursor: pointer}
+heading {
+    font-size: 14pt;
+    padding-bottom: 5px;
+    font-weight: bold;
+    display: block;
+}
+comment {
+    font-size: 11pt;
+    padding: 3px;
+    margin-left: 20px
+}
+prologue {
+    display: block;
+    /* font-size: 11pt; */
+    margin-bottom: 20px;
+}
+postscript {
+    font-size: smaller;
+    display: block;
+    margin-top: 20px;
+}
+content {
+    display: block;
+    background-color: white;
+    margin: 5px;
+    padding: 20px;
+    border-radius: 7px;
+}
+answer, answer wordbank, .locked refresh {display: none}
+.locked answer {
+    display: block;
+    background-color: ivory;
+    margin: 5px;
+    padding: 20px;
+    border-radius: 7px;
+}
+answer blank {color: blue}
+button.finish-button {
+    cursor: pointer;
+    font-size: 16pt;
+    color: #4486f0;
+    width: 100px;
+    background-color: ghostwhite;
+    margin-left: calc(100% - 200px);
+    margin-bottom: 50px;
+    padding: 10px;
+    border:3px solid #4486f0;
+    border-radius: 10px;
+    outline: none;
+}
+select {
+    outline: none; 
+    cursor: pointer; 
+    min-width: 100px;
+    font-family: Arial, Helvetica, sans-serif;
+    border: 3px solid lightgrey; 
+    border-radius: 7px;
+    height: 25px;
+    font-size: 15px;
+    margin: 4px;
+    margin-left: -1px;
+    margin-bottom: 0px;
+    /* 
+    margin-right: 5px; */
+}
+blank {
+    display: inline-block;
+    width: 125px;
+    height: 20px;
+    margin-top: 3px;
+    padding-top: 0px;
+    padding-bottom: 2px;
+    /* padding-top: 4px; */
+    /* margin-right: 5px;  */
+    text-align: center;
+    border: 3px transparent solid;
+    margin-bottom: 2px;
+    border-bottom: 1px black solid;
+}
+.type blank {
+    outline: none;
+    cursor: text;
+    padding:0px;
+    padding-top: 3px;
+    -webkit-user-modify: read-write-plaintext-only;
+}
+text {
+    display: block;
+}
+text.type , .type li {
+    line-height: 150%;
+}
+.drop text, text.drop , .drop li {
+    line-height: 195%;
+}
+.line li {
+    margin-bottom: 20px;
+}
+.line blank {
+    /* margin-bottom: 30px; */
+    text-align: left;
+    /* width: 100%; */
+    width: calc(100% - 30px);
+    padding-left: 7px;
+}
+/* .line blank.correct {
+    margin-bottom: 28px;
+} */
+.cloze-rates button {
+    margin:5px;
+}
+.feedback .cloze-rates {display: none}
+.drop blank {
+    white-space: nowrap;
+    background-color: transparent;
+    vertical-align: middle;
+    margin-top: -2px;
+    /* margin-bottom: -2px;
+    padding-top: -2px;
+    padding-bottom: -2px; */
+}
+.selector blank, answer .selector select {
+    display: none;
+}
+answer .selector blank {display: inline-block;}
+/* .drop blank.dropped {
+    vertical-align: inherit;
+    padding: 6px;
+} */
+td, th {
+    /* padding: 7px; */
+    padding-left: 5px;
+    padding-right: 5px;
+    border: 1px solid lightslategray;
+    width: 150px;
+    height: 40px;
+    font-weight: normal;
+    text-align: center;
+} /* all td and td[type] before they are correct are the same. this keeps them from 'jumping' when first starting to type. */
+/* tr:first-child td */ th, td:first-child {background-color: #f5f5f5; text-align: left}
+td blank {
+    margin-left: -3px;
+    margin-top: 0px;
+    padding: 8px;
+    padding-top: 10px;
+    padding-bottom: 6px;
+    width: calc(100% - 15px);
+    border-bottom: 1px solid transparent;
+}
+wordbank { /* word-banks for each section */
+    display: block;
+    min-height: 33px;
+    padding: 20px;
+    margin: 20px;
+    margin-top: 30px;
+    margin-bottom: 0px;
+    border:1px solid grey;
+    border-radius: 5px;
+    background-color: whitesmoke;
+    text-align: center;
+}
+.type ref {
+    padding-left: 15px;
+    padding-right: 15px;
+    line-height: 200%;
+    display: inline-block;
+}
+.drop ref {
+    line-height: 200%;
+    cursor:move;
+    background-color: white;
+    border-color: transparent;
+    border-radius: 7px;
+    margin: 3px;
+    padding: 4px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+ref.dropped {
+    background-color: transparent;
+    display: inline-block;
+    margin-top: -9px;
+    vertical-align: text-bottom;
+    padding-left: 0px;
+    padding-right: 0px;
+}
+wordclick {
+    display: block;
+    line-height: 175%;
+    padding: 20px;
+    padding-left: 40px;
+    padding-right: 40px;
+}
+lex { /* AUTOMATIC – each word in a <word-click> element */
+    /* white-space: pre-wrap; */
+    padding: 1px; 
+    margin: 1px; 
+    cursor: pointer; 
+    color: rgb(90, 90, 90);
+    border: 3px solid white;
+} 
+checkbox , choose { /* styles the <checkbox> and <choose> elements */
+    display: block;
+    padding: 2px;
+    line-height: 200%;
+}
+checkbox box {
+    cursor: pointer; 
+    vertical-align: top;
+    margin-right: 10px;
+    border: 3px solid transparent;
+}
+.audio-container .player {
+    cursor: pointer!important;
+}
+span.duration, span.location {
+    vertical-align: super;
+}
+span.duration {
+    margin-left: 15px;
+}
+.audio-container monitor {
+    cursor: pointer;
+    display: inline-block;
+    margin-left: 15px;
+    /* vertical-align: middle; */
+    height:7px;
+    /* width: 197px; */
+    width: calc(100% - 130px);
+    max-width: 200px;
+    background-color: lightgray;
+}
+.audio-container bar {
+    display: inline-block;
+    vertical-align: top;
+    height:7px;
+    background-color: blue;
+}
+.audio-container ball {
+    border-radius: 10px;
+    background-color: blue;
+    position: absolute;
+    margin: -3px;
+    padding: 6px;
+}
+.feedback .correct {
+    margin-bottom: 0px;
+    border: 3px #3C7 solid;
+    border-radius: 7px;
+}
+.feedback .incorrect, .locked content blank:not(.correct), .locked content select:not(.correct)  {
+    margin-bottom: 0px;
+    border: 3px solid #dd4539;
+    border-radius: 7px;
+}
