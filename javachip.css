@@ -3,13 +3,24 @@ body {
     user-select: none;
     margin-bottom: 100px;
 }
-h1, section {
+header, section {
     background-color: whitesmoke;
     padding: 25px;
     margin: 20px;
     border-radius: 7px;
 }
-.feedback section.completed {background-color: #CEF6EC}
+name-tag {
+    display: inline-block;
+    text-align: center;
+    outline: none;
+    min-width: 100px;
+    border-bottom: 1px solid black;
+    -webkit-user-modify: read-write-plaintext-only;
+}
+.locked name-tag {
+    -webkit-user-modify: read-only;
+}
+.feedback:not(.locked) section.completed {background-color: #CEF6EC}
 refresh,restore_page {float: right; cursor: pointer}
 heading {
     font-size: 14pt;
@@ -39,6 +50,9 @@ content {
     padding: 20px;
     border-radius: 7px;
 }
+img {
+    border-radius: 7px;
+}
 answer, answer wordbank, .locked refresh {display: none}
 .locked answer {
     display: block;
@@ -47,7 +61,7 @@ answer, answer wordbank, .locked refresh {display: none}
     padding: 20px;
     border-radius: 7px;
 }
-answer blank {color: blue}
+answer blank, answer lex[answer], .locked lex[answer] {color: blue}
 button.finish-button {
     cursor: pointer;
     font-size: 16pt;
@@ -94,14 +108,16 @@ blank {
     outline: none;
     cursor: text;
     padding:0px;
-    padding-top: 3px;
+    /* padding-top: 3px; */
+    padding-bottom: 4px;
+    margin-top: -2px;
     -webkit-user-modify: read-write-plaintext-only;
 }
 text {
     display: block;
 }
-text.type , .type li {
-    line-height: 150%;
+.type text, text.type , .type li {
+    line-height: 195%;
 }
 .drop text, text.drop , .drop li {
     line-height: 195%;
@@ -210,7 +226,7 @@ lex { /* AUTOMATIC – each word in a <word-click> element */
     margin: 1px; 
     cursor: pointer; 
     color: rgb(90, 90, 90);
-    border: 3px solid white;
+    border: 3px solid transparent;
 } 
 checkbox , choose { /* styles the <checkbox> and <choose> elements */
     display: block;
@@ -236,11 +252,11 @@ span.duration {
     cursor: pointer;
     display: inline-block;
     margin-left: 15px;
-    /* vertical-align: middle; */
     height:7px;
     /* width: 197px; */
     width: calc(100% - 130px);
-    max-width: 200px;
+    max-width: 250px;
+    min-width: 150px;
     background-color: lightgray;
 }
 .audio-container bar {
@@ -256,13 +272,41 @@ span.duration {
     margin: -3px;
     padding: 6px;
 }
+answer .audio-container {display: none}
+checkbox .audio-container, li .audio-container {
+    display: inline-block;
+    position: relative;
+    top: 4px;
+}
+li .audio-container {
+    margin-right: 10px;
+    padding-top: 15px;
+}
+checkbox monitor, .type li monitor {
+    vertical-align: sub;
+}
+.drop li monitor {
+    vertical-align: text-top;
+}
 .feedback .correct {
     margin-bottom: 0px;
     border: 3px #3C7 solid;
     border-radius: 7px;
 }
-.feedback .incorrect, .locked content blank:not(.correct), .locked content select:not(.correct)  {
+.feedback .incorrect, .locked content blank:not(.correct), .locked content select:not(.correct), .locked content lex[answer]:not(.correct) {
     margin-bottom: 0px;
     border: 3px solid #dd4539;
     border-radius: 7px;
 }
+.no-feedback lex.correct, .no-feedback lex.incorrect {border: 3px grey solid; border-radius: 7px;}
+
+.locked .finish-button {
+    display: none;
+}
+/* #submitButton {
+    padding: 5px;
+    margin: 5px;
+    border-radius: 3px;
+    font-size: x-large;
+    outline: none;
+} */

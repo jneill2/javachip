@@ -2,32 +2,110 @@ const radioChecked = 'radio_button_checked';
 const radioUnchecked = 'radio_button_unchecked';
 const play_button = 'play_circle_outline';
 const pause_button = 'pause_circle_outline';
+
+var sheet_id;
+var saved_page;
+var loginName = localStorage.currentUser;
 // function practice(x) {
 //     return layout(x, 'feedback');
 // }
 // function quiz(x) {
 //     return layout(x, 'no-feedback');
 // }
-function javachip(x, feedback) {
+function javachip(sheet, feedback) {
+    sheet_id = null;
     let y = 'feedback';
-    if (feedback == false) {
+    if (feedback != true) {
         y = 'no-feedback';
     }
-    return layout(x, y)
+    saved_page = localStorage.userNumber+' – '+sheet.id;
+    if (localStorage[saved_page]) {
+        return localStorage[saved_page];
+    } else {
+        if (sheet.id) sheet_id = sheet.id;
+        return layout(sheet, y)
+    }
 }
-function layout(x, c) {
-    // var x = jQuery.extend(true, {}, data);
-    // console.log(x,data)
-    let header = create_header(x);
-    let sections = create_sections(x)
+function layout(sheet, c) {
+    let header = create_header(sheet);
+    let sections = create_sections(sheet);
+    if (sheet.time && c == 'no-feedback') {
+        $(sections).addClass('hide');
+        let enter = document.createElement('button');
+        enter.innerText = 'Enter to start';
+        enter.addEventListener('click', displaySheet)
+        $(header).append(enter);
+        $(header).append(sheet.time+' minutes');
+    }
     let container = document.createElement('div');
     container.className = c;
-    let button = create_finishButton(container);
-    $(sections).append(button);
+    let button = create_finishButton();
+    if (c == 'no-feedback') {
+        $(sections).append(button);
+    }
+    button.addEventListener('click', function () {
+        $(container).animate({ opacity: 0.1 }, 5).animate({ opacity: 1 }, 400)
+        $(container).parent()[0].scrollIntoView();
+        window.scrollTo(0, 0);
+        container.className = 'feedback locked';
+        $(container).find('answer :not("lex")[answer]').each(function () {
+            let str = $(this).attr('answer');
+            let txt = str.split(/&&|\|\|/g)[0];
+            $(this).text(txt)
+        })
+        if (sheet.time) {
+            setTimeout(function(){ 
+                if (localStorage.userNumber) {
+                    saved_page = localStorage.userNumber+' – '+sheet_id;
+                } else {
+                    saved_page = localStorage.currentUser+' – '+sheet_id;
+                }
+                localStorage[saved_page] = container.outerHTML; 
+                $('content').find('div, text, ol, wordclick').each(function (i) {
+                    reload_section(this, i);
+                });
+                container.outerHTML = localStorage[saved_page];
+            }, 1000);
+            // $(container).find('div')[0].prepend(
+            $(sections).prepend(
+                createSubmitButton() // end of file
+            )
+        }
+        /* the following line is specific to the BGP app and app.js */
+        $('.app-topbar').find('.app-button.left').removeClass('hide');
+    })
     $(container).append(header, sections);
     return container;
 };
-$(window).on('keydown', function(evt) {
+function displaySheet() {
+    if (localStorage.currentUser) {
+        if (sheet_id) {
+            /* the following line is specific to the BGP app and app.js */
+            $('.app-topbar').find('.app-button.left').addClass('hide');
+            saved_page = localStorage.currentUser+' – '+sheet_id;
+            console.log(saved_page)
+            if (localStorage[saved_page]) {
+                document.getElementsByClassName('no-feedback')[0].outerHTML = localStorage[saved_page];
+                /* the following line is specific to the BGP app and app.js */
+                $('.app-topbar').find('.app-button.left').removeClass('hide');
+            }
+            $('.no-feedback').find('div.hide').removeClass('hide');
+            $('header').find('button').remove();
+        } else {
+            /* the following line is specific to the BGP app and app.js */
+            $('.app-topbar').find('.app-button.left').addClass('hide');
+        }
+        // loginName = localStorage.currentUser;
+    } else {
+        alert('Please enter your name.')
+    }
+}
+$(window).on('keydown', function (evt){
+    if (evt.key == 'Enter') {
+        displaySheet()
+    }
+})
+$(window).on('keydown', function (evt) {
     if (evt.key == 'Enter') {
         evt.preventDefault();
         // console.log(evt)
@@ -46,13 +124,13 @@ $(window).on('keydown', function(evt) {
                 $(td).find('blank')[0].focus();
             } else if ($(evt.target).closest('TABLE').first('tr').find('blank') == true) {
                 let first_row = $(evt.target).closest('TABLE').find('tr')[0];
-                let nxt  = $(first_row).find('td')[col+1];
+                let nxt = $(first_row).find('td')[col + 1];
                 if (nxt) {
                     $(nxt).find('blank')[0].focus();
                 }
             } else if ($(evt.target).closest('TABLE').find('tr')[1]) {
                 let sec_row = $(evt.target).closest('TABLE').find('tr')[1];
-                let nxt  = $(sec_row).find('td')[col+1];
+                let nxt = $(sec_row).find('td')[col + 1];
                 if (nxt) {
                     $(nxt).find('blank')[0].focus();
                 }
@@ -69,109 +147,124 @@ $(window).on('keydown', function(evt) {
     * 
 */
 function create_header(sheet) {
+    let header = document.createElement('header');
     let page_title = document.createElement('h1');
     if (sheet.title) {
         page_title.innerHTML = sheet.title;
     } else {
-        page_title = undefined;
+        page_title.innerHTML = 'JavaChip';
+        // page_title = undefined;
     }
-    let restore_page = document.createElement('restore_page');
-    $(restore_page).html('restore_page').addClass('material-icons');
-    $(restore_page).click(function() {
-        $(page_title).parent().animate({opacity:0.1}, 5).animate({opacity:1},400)
-        for (re_item in sheet.sections) {
-            reload_section(sheet.sections[re_item].main.content, re_item)
-        }
-    })
-    page_title.appendChild(restore_page);
-    return page_title;
+    header.appendChild(page_title);
+    if (!sheet.time) {
+        let restore_page = document.createElement('restore_page');
+        $(restore_page).html('restore_page').addClass('material-icons');
+        $(restore_page).click(function () {
+            $(page_title).closest('div').animate({ opacity: 0.1 }, 5).animate({ opacity: 1 }, 400)
+            for (re_item in sheet.sections) {
+                reload_section(sheet.sections[re_item].main.content, re_item)
+            }
+        })
+        page_title.appendChild(restore_page);
+    }
+    if (sheet.time) {
+        let nameTag = document.createElement('name-tag');
+        let nameLabel = document.createElement('span');
+        nameLabel.innerText = `Name: `;
+        if (localStorage.currentUser) nameTag.innerText = localStorage.currentUser;
+        nameTag.addEventListener('keyup', function() {
+            localStorage.currentUser = nameTag.innerText;
+            // sheet_id = nameTag.innerText+' – '+sheet.id
+        })
+        nameLabel.appendChild(nameTag)
+        header.insertBefore(nameLabel, page_title);
+        /* add time-stamp and total points */
+    }
+    return header;
 }
 function create_sections(sheet) {
     let sections = document.createElement('div');
     for (item in sheet.sections) {
+        let section = sheet.sections[item];
         let heading_el = document.createElement('heading');
-        let num = Number(item)+1;
-            heading_el.innerHTML = num + '. ' + sheet.sections[item].title;
+        let num = Number(item) + 1;
+        heading_el.innerHTML = num + '. ' + section.title;
         let section_el = document.createElement('section');
         let comment_el = document.createElement('comment');
         let content_el = document.createElement('content');
         let postscript_el = document.createElement('postscript');
         let prologue_el = document.createElement('prologue');
-        let main_content = sheet.sections[item].main.content;
-        let main_class = sheet.sections[item].main.class;
+        let main_content = section.main.content;
+        let main_class = section.main.class;
         let answer = document.createElement('answer');
-        if (sheet.sections[item].comment) {
-            comment_el.innerHTML = sheet.sections[item].comment;
+        if (section.comment) {
+            comment_el.innerHTML = section.comment;
         } else {
             comment_el = undefined;
         }
-        if (sheet.sections[item].class) {
-            section_el.className = sheet.sections[item].class;
+        if (section.class) {
+            section_el.className = section.class;
         }
-        if (sheet.sections[item].main.prologue) {
-            $(prologue_el).append(sheet.sections[item].main.prologue);
+        if (section.style) {
+            section_el.style = section.style;
+        }
+        if (section.main.prologue) {
+            $(prologue_el).append(section.main.prologue);
             content_el.appendChild(prologue_el);
         }
         // create_content(sheet, item);
         if (typeof main_content === 'function') {
             // let cc = () => {return main_content();}
             try {
-                content_el.appendChild( main_content() );
-            } catch(err) {
+                $(content_el).append(main_content());
+            } catch (err) {
+                console.log(err.message)
                 content_el.innerHTML = (err.message)
             }
         } else {
             try {
-                content_el.appendChild(main_content);
-            } catch(err) {
+                $(content_el).append(main_content);
+            } catch (err) {
+                console.log(err.message)
                 content_el.innerHTML = (err.message)
             }
         }
         if (main_class) {
             content_el.className = main_class;
         }
+        if (section.main.style) {
+            content_el.style = section.main.style;
+        }
         answer.innerHTML = content_el.innerHTML;
+        answer.className = content_el.className;
+        answer.innerHTML = answer.innerHTML.replace(/%%/g, ' ');
         dnd_able(content_el);
-        if (sheet.sections[item].main.postscript) {
-            postscript_el.innerHTML = sheet.sections[item].main.postscript;
+        if (section.main.postscript) {
+            postscript_el.innerHTML = section.main.postscript;
             content_el.appendChild(postscript_el);
         }
         let re_item = item;
         let refresh = document.createElement('refresh')
-        $(refresh).html('refresh').addClass('material-icons')
-        $(refresh).click(function() {
-            reload_section(sheet.sections[re_item].main.content, re_item);
-            // $(this).parent().find('blank')
-            // let re_con = create_content(sheet, re_item);
-            // console.log(re_con)
-        })
+        if (!sheet.time) {
+            $(refresh).html('refresh').addClass('material-icons')
+            $(refresh).click(function () {
+                reload_section(sheet.sections[re_item].main.content, re_item);
+            })
+        }
         $(section_el).append(refresh, heading_el, comment_el, content_el, answer);
         $(sections).append(section_el);
     }
     return sections;
 }
-function create_finishButton(container) {
+function create_finishButton() {
     let button = document.createElement('button');
     button.className = 'finish-button';
     button.innerText = 'Finish';
-    $(button).click(function() {
-        $(container).animate({opacity:0.1}, 5).animate({opacity:1},400)
-        $(container).parent()[0].scrollIntoView();
-        window.scrollTo(0, 0);
-        container.className = 'feedback locked';
-        $(container).find('answer [answer]').each(function() {
-            let str = $(this).attr('answer');
-            let txt = str.split(/&&|\|\|/g)[0];
-            // txt = txt.trim().split(' ');
-            // txt = txt.toString().replace(/&nbsp;/g, ' ');
-            $(this).text(txt)
-        })
-    })
     return button;
 }
 // function create_content(sheet, item) {
 //     // let content_el = document.createElement('content');
-//     let main_content = sheet.sections[item].main.content;
+//     let main_content = section.main.content;
 //     if (typeof main_content === 'function') {
 //         try {
 //             content_el.appendChild(main_content());
@@ -189,9 +282,9 @@ function create_finishButton(container) {
 //     return content_el
 // }
 function reload_section(container) {
-    $(container).animate({opacity:0.1}, 5).animate({opacity:1},400);
+    $(container).animate({ opacity: 0.1 }, 5).animate({ opacity: 1 }, 400);
     // $(container).animate({opacity:1},400)
-    if (document.getElementsByClassName('locked')[0]){document.getElementsByClassName('locked')[0].className = 'no-feedback';}
+    if (document.getElementsByClassName('locked')[0]) { document.getElementsByClassName('locked')[0].className = 'no-feedback'; }
     $(container).closest('section').removeClass('completed');
     $(container).find('blank').each(function () {
         $(this).html('').removeClass('correct').removeClass('incorrect');
@@ -201,20 +294,20 @@ function reload_section(container) {
     });
     $(container).find('box').each(function () {
         $(this).html(radioUnchecked).removeClass('correct').removeClass('incorrect');
-        
+
     });
     $(container).find('lex').each(function () {
         $(this).removeClass('correct').removeClass('incorrect');
 
     });
-    $(container).each(function() {
+    $(container).each(function () {
         let arr = [];
         for (i = 0; i < $(container).find('checkbox').length; i++) {
             arr.push($(container).find('checkbox')[i]);
         }
         $(this).append(randomizeArray(arr));
     })
-    $(container).each(function() {
+    $(container).each(function () {
         let arr = [];
         for (i = 0; i < $(this).find('li').length; i++) {
             arr.push($(container).find('li')[i])
@@ -230,7 +323,7 @@ function reload_section(container) {
         wordbank(container);
         dnd_able(container.parentElement)
     }
-    $(container).closest('section').find('answer').html( container.outerHTML );
+    $(container).closest('section').find('answer').html(container.outerHTML.replace(/%%/g, ' '));
 }
 /* 
     These functions can be called by the user independently or in a practice sheet/quiz
@@ -243,21 +336,36 @@ function reload_section(container) {
     * The word `dragon` can be used as the second aug in the main table() function to create a drag-and-drop
     * The word `wordbank` can be used as the second aug in the main table() or type() function to create a wordbank for the typeable words.
 */
-function audio(src, txt) {
+function img(src, style) {
+    let im = document.createElement('img');
+    im.setAttribute('src', src);
+    im.style = style;
+    return im
+}
+function audio(urls, txt) {
     let container = document.createElement('div');
-        container.className = 'audio-container'
+    container.className = 'audio-container'
     let monitor = document.createElement('monitor');
     let bar = document.createElement('bar');
     let ball = document.createElement('ball');
-        $(monitor).append(bar, ball);
+    $(monitor).append(bar, ball);
     let playIcon = document.createElement('span');
-        playIcon.className = 'player material-icons';
-        playIcon.innerHTML = play_button;
+    playIcon.className = 'player material-icons';
+    playIcon.innerHTML = play_button;
     let note = document.createElement('note');
     if (txt) note.innerHTML = txt;
     let audio = document.createElement('audio');
-        audio.setAttribute('src',src);
-    playIcon.addEventListener('click', function() {
+    audio.setAttribute('preload', '');
+    if (urls.length && typeof urls === 'object') {
+        for (url in urls) {
+            let source = document.createElement('source');
+            source.setAttribute('src', urls[url]);
+            audio.appendChild(source);
+        }
+    } else {
+        audio.setAttribute('src', urls);
+    }
+    playIcon.addEventListener('click', function () {
         play_pause(container, monitor, audio);
     })
     soundBar(container, monitor, audio);
@@ -268,19 +376,19 @@ function click(prop) {
     let string = prop.trim();
     string = string.split(' ');
     let wordclick = document.createElement('wordclick');
-    for (word in string) {
+    for (str in string) {
+        let word = string[str].replace(/[\u0021-\u002f]|\:|\;|·/g, '');
         let lex = document.createElement('lex');
-        if (string[word].slice(0,2) == '{{' && string[word].slice(-2) == '}}') {
-            let answer = string[word].slice(2,-2);
-            // answer_arr.push(answer);
+        if (word.slice(0, 2) == '{{' && word.slice(-2) == '}}') {
+            let answer = string[str].replace(/{{|}}/g, '');
             lex.innerHTML = answer;
             lex.setAttribute('answer', '');
             $(wordclick).append(lex);
         } else {
-            lex.innerHTML = string[word];
+            lex.innerHTML = string[str];
             $(wordclick).append(lex, '&#8203;');
         }
-        $(lex).click(function() {
+        $(lex).click(function () {
             if (this.hasAttribute('answer')) {
                 if (this.className == 'correct') {
                     $(this).removeClass('correct');
@@ -294,7 +402,8 @@ function click(prop) {
                     $(this).addClass('incorrect');
                 }
             }
-            check_section($(this).closest('section'));
+            // console.log((this.closest('section')))
+            check_section(this.closest('section'));
         })
     }
     return wordclick;
@@ -305,12 +414,12 @@ function selector(prop, options) {
     container.appendChild(content);
     let select = document.createElement('select');
     let opt_arr = [];
-    if (options.length > 0) {
+    if (options && options.length > 0) {
         for (option in options) {
             opt_arr.push(options[option]);
         }
     } else {
-        $(container).find('[answer]').each(function() {
+        $(container).find('[answer]').each(function () {
             let option = $(this).attr('answer');
             if (opt_arr.indexOf(option) == -1) {
                 opt_arr.push(option);
@@ -322,10 +431,10 @@ function selector(prop, options) {
     for (opt in opt_arr) {
         let option = document.createElement('option');
         $(option).text(opt_arr[opt]);
-        $(option).attr('value',opt_arr[opt]);
+        $(option).attr('value', opt_arr[opt]);
         $(select).append(option);
     }
-    $(select).on('change', function() {
+    $(select).on('change', function () {
         $(this).removeClass('correct , incorrect');
         let answer = $(this).next('[answer]').attr('answer').split(' || ');
         // let isgood = $(this).val() == $(this).next('[answer]').attr('answer');
@@ -335,7 +444,7 @@ function selector(prop, options) {
         } else if (isgood == false && $(this).val().length > 0) {
             $(this).addClass('incorrect');
         }
-        check_section($(this).closest('section'));
+        check_section(this.closest('section'));
     })
     $(container).find('blank').before(select);
     $(container).addClass('selector');
@@ -356,13 +465,13 @@ function checkbox(prop, isChoose) {
         box.className = 'material-icons'
         box.innerHTML = radioUnchecked;
         let checkbox_el = document.createElement('checkbox');
-        if (typeof chbox_arr[x] == 'string') {
-            checkbox_el.innerText = chbox_arr[x];
+        if (chbox_arr[x].correct) {
+            $(checkbox_el).append(chbox_arr[x].correct);
+            $(box).attr('answer', radioChecked);
         } else {
-            checkbox_el.innerText = chbox_arr[x].correct;
-            $(box).attr('answer', '');
+            $(checkbox_el).append(chbox_arr[x]);
         }
-        $(box).on('click', function() {
+        $(box).on('click', function () {
             if (isChoose == 'choose') {
                 $(this).parent().parent().find('box').removeClass('correct').html(radioUnchecked);
                 $(this).parent().parent().find('box').removeClass('incorrect').html(radioUnchecked);
@@ -379,7 +488,7 @@ function checkbox(prop, isChoose) {
                     $(this).addClass('incorrect');
                 }
             }
-            check_section($(this).closest('section'));
+            check_section(this.closest('section'));
         });
         $(checkbox_el).prepend(box);
         div.appendChild(checkbox_el);
@@ -389,7 +498,7 @@ function checkbox(prop, isChoose) {
 function table(prop, _command) {
     let tb = document.createElement('table');
     if (prop.header) {
-        if (prop.header.length >! prop.data[0].length) {
+        if (prop.header.length > !prop.data[0].length) {
             prop.header.unshift('');
         }
         let first_row = document.createElement('tr');
@@ -438,18 +547,17 @@ function table(prop, _command) {
     return container;
 }
 function type(prop, _command) {
-    let content = blankify(prop);
+    let content = blankify(prop, _command);
     let container = document.createElement('div');
     container.appendChild(content);
     make_typeable(container);
     if (_command) {
         if (typeof _command === 'function') {
             _command(container);
-        } else {
+        } else if (typeof _command === 'object') {
             console.log('make wordbank from array')
         }
     }
-    console.log(container)
     return container;
 }
 function dragon(prop, shuffle) {
@@ -470,8 +578,8 @@ function dragon(prop, shuffle) {
         for (item in rates) {
             let button = document.createElement('button');
             let r = rates[item]
-            button.innerHTML = 'cloze ('+r+')';
-            button.addEventListener('click', function() {
+            button.innerHTML = 'cloze (' + r + ')';
+            button.addEventListener('click', function () {
                 $(container).find('wordbank').remove()
                 $(container).find('text').remove()
                 // dnd_able(container.parentElement);
@@ -486,34 +594,33 @@ function dragon(prop, shuffle) {
         }
         container.appendChild(rateButtons);
     }
-    container.appendChild(content);
+    $(container).append(content);
     return dnd(container)
 }
 function cloze(prop, rates) {
-    Array.max = function( array ){
-        return Math.max.apply( Math, array );
+    Array.max = function (array) {
+        return Math.max.apply(Math, array);
     };
     let maxRate = Array.max(rates);
     let startWord = Math.floor((Math.random() * maxRate))
     let text = prop.split(' ');
     let i = startWord;
     while (i < text.length) {
-        console.log(text[i].slice(0,1))
         let lastChar = '';
         let firstChar = '';
-        if (['.', ',', '!', ';', '·', '-', '–', "'",'"' ].indexOf(text[i].slice(-1)) != -1) {
+        if (['.', ',', '!', ';', '·', '-', '–', "'", '"'].indexOf(text[i].slice(-1)) != -1) {
             lastChar = text[i].slice(-1);
         }
-        if (["'",'"'].indexOf(text[i].slice(0,1)) != -1) {
-            firstChar = text[i].slice(0,1);
+        if (["'", '"'].indexOf(text[i].slice(0, 1)) != -1) {
+            firstChar = text[i].slice(0, 1);
             console.log(firstChar)
         }
-        text[i] = firstChar + '{{'+text[i].replace(/\.|\,|\!|\;|·|\-|\–|\'|\"/g, "")+'}}' + lastChar;
-        i = i+maxRate;
+        text[i] = firstChar + '{{' + text[i].replace(/\.|\,|\!|\;|·|\-|\–|\'|\"/g, "") + '}}' + lastChar;
+        i = i + maxRate;
     }
     let clozeText = {
         original: prop,
-        text:text.join(' '),
+        text: text.join(' '),
         rates: rates
     }
     return clozeText
@@ -521,38 +628,40 @@ function cloze(prop, rates) {
 }
 function wordbank(content) {
     let ref_arr = []
-    $(content).find('[answer]').each(function() {
+    $(content).find('[answer]').each(function () {
         let answer = this.getAttribute('answer');
         // answer = answer.replace(/ %% | %%|%% /g, '%%');
-        let str = answer.split(/&&|%%|\|\|/g)[0];
-            str = str.trim()/* .split(' ') */
-            ref_arr.push(str)
+        // let str = answer.split(/&&|%%|\|\|/g)[0];
+        let str = answer.split(/\|\|/g)[0];
+        str = str.trim().split(/&&|%%/g)
+        for (w in str) {
+            // str[w] = str[w].replace(/%%|&&/g, ' ')
+            ref_arr.push(str[w].trim());
+        }
+        // ref_arr.push(str)
         // let str = answer.split(/&&|%%|\|\|/g)[0,1];
         // if (typeof limit === 'number') {
         //     str = answer.split(/&&|%%|\|\|/g)[limit-1];
         //     str = str.trim().split(' ')
         // }
-        /* for (w in str) {
-            str[w] = str[w].replace(/%%/g, ' ')
-            ref_arr.push(str[w]);
-        } */
+
     })
     ref_arr = randomizeArray(ref_arr);
     let wordbank = document.createElement('wordbank');
     for (x in ref_arr) {
         let ref = document.createElement('ref');
-            ref.innerHTML = ref_arr[x].replace(/ /g, '&nbsp;')
+        ref.innerHTML = ref_arr[x].replace(/ /g, '&nbsp;')
         $(wordbank).append(ref, '&#8203;');
     }
-    content.appendChild(wordbank);
+    $(content).append(wordbank);
     return content;
 }
 /* 
     * The following functions are not intended to be called directly by the user
 */
 function dnd(content) {
-    $(content).on('drop', function() {
-        check_section($(this).closest('section'));
+    $(content).on('drop', function () {
+        check_section(this.closest('section'));
     })
     content.className = 'drop';
     wordbank(content);
@@ -568,7 +677,7 @@ function blankify(prop, shuffle) {
         li_arr = [];
         for (str in prop) {
             let li = document.createElement('li');
-            let list_item = handle_string(prop[str], li); 
+            let list_item = handle_string(prop[str], li);
             li_arr.push(list_item);
         }
         if (shuffle != false) {
@@ -580,10 +689,13 @@ function blankify(prop, shuffle) {
         }
         content_text = ol;
     }
-    
     return content_text;
 }
 function handle_string(prop, container) {
+    if (prop.dom) {
+        $(container).append(prop.dom);
+        prop = prop.text;
+    }
     let string = prop.trim();
     string = string.replace(/ %% | %%|%% |%%/g, '%%')
     string = string.replace(/}}/g, '}} ');
@@ -619,7 +731,7 @@ function handle_string(prop, container) {
 }
 function randomizeArray(array) {
     var m = array.length, t, i;
-      // While there remain elements to shuffle…
+    // While there remain elements to shuffle…
     while (m) {
         // Pick a remaining element…
         i = Math.floor(Math.random() * m--);
@@ -631,7 +743,7 @@ function randomizeArray(array) {
     return array;
 }
 function check_section(el) {
-    if ($(el).find('[answer]').length == $(el).find('.correct').length && $(el).find('.incorrect').length == 0) {
+    if ($(el).find('content [answer]').length == $(el).find('content .correct').length && $(el).find('content .incorrect').length == 0) {
         $(el).addClass('completed');
     } else {
         $(el).removeClass('completed');
@@ -641,13 +753,13 @@ function check_section(el) {
     * check_on_enter() is for drag-n-drop and type blanks
 */
 function check_on_enter(target, text, answer) {
-    let input_text = text.toString().replace(/,|\.|;/g , '').trim();
-        input_text = input_text.toLowerCase();
-        input_text = input_text.replace(/\u00a0/g, " "); //replace &nbsp; with space
+    let input_text = text.toString().replace(/,|\.|;/g, '').trim();
+    input_text = input_text.toLowerCase();
+    input_text = input_text.replace(/\u00a0/g, " "); //replace &nbsp; with space
     let answer_text = answer.replace(/ \||\| /g, '|');
-        answer_text = answer_text.replace(/%%/g, ' ');
-        answer_text = answer_text.replace(/\./g, '').toLowerCase();
-    if ( $(target).closest('content').hasClass('normalize') ) {
+    answer_text = answer_text.replace(/%%/g, ' ');
+    answer_text = answer_text.replace(/\.|,/g, '').toLowerCase();
+    if ($(target).closest('content').hasClass('normalize')) {
         /* u0345 is the iota subscript. normalization does not normalize the iota subscript */
         input_text = input_text.normalize('NFD').replace(/[\u0300-\u0344]/g, "")
         input_text = input_text.normalize('NFD').replace(/[\u0346-\u036f]/g, "")
@@ -661,7 +773,7 @@ function check_on_enter(target, text, answer) {
         let and = answer_arr[or].split(' && ');
         let a_correct_answer = and.toString().replace(/,/g, ' ');
         for (unit in and) {
-            let andx = and[unit].replace(/,|\.|;/g , '');
+            let andx = and[unit].replace(/,|\.|;/g, '');
             if (input_text.indexOf(andx) != -1) {
                 andRef.push(andx);
             }
@@ -678,7 +790,7 @@ function check_on_enter(target, text, answer) {
             }
         }
         if (!input_text || input_text.length < a_correct_answer.length) {
-            $(target).removeClass('incorrect');   
+            $(target).removeClass('incorrect');
         }
     }
     if (match == true) {
@@ -718,7 +830,7 @@ function drop(ev) {
     } else {
         dragged.className = "dropped";
     }
-    $(ev.path[3]).find('blank').each(function() {
+    $(ev.path[3]).find('blank').each(function () {
         check_each_blank(this);
     })
 };
@@ -733,7 +845,7 @@ function check_each_blank(target) {
     }
 }
 function make_typeable(container) {
-    $(container).find('blank').on('keyup', function() {
+    $(container).find('blank').on('keyup', function () {
         let text = $(this).text().trim();
         let answer = $(this).attr('answer');
         check_on_enter(this, text, answer);
@@ -743,10 +855,10 @@ function make_typeable(container) {
 }
 function dnd_able(container) {
     $(container).find('.drop ref').each(function (num) {
-        let id_value = ("drag"+i+'_'+ num.toString());
+        let id_value = ("drag" + num + '_' + num.toString());
         $(this).attr("id", id_value);
         $(this).attr("draggable", "true");
-        this.addEventListener('dragstart', function(ev) {
+        this.addEventListener('dragstart', function (ev) {
             this.id = 'dragging_element'
             ev.dataTransfer.setData("id", 'dragging_element');
         })
@@ -814,4 +926,67 @@ function scrubAudio(container, monitor, audio) {
         $(monitor).find('bar')[0].style = 'width:' + barLength + 'px';
         audio.currentTime = newLocation;
     }
+}
+
+function createSubmitButton(x) {
+    // let textToExport = x.outerHTML;
+    $('#submit_wrapper').remove()
+    let div = document.createElement('section');
+    div.setAttribute('id', 'submit_wrapper');
+    div.style = 'text-align: center';
+    div.innerText = `Submit results for ${localStorage.currentUser} (internet connection required.)`
+    let openSubmitWindow = document.createElement('button');
+    openSubmitWindow.style='background-color:initial; cursor:pointer; font-size:large; border-radius:7px; border:2px solid grey; width:200px; margin:5px; outline:none'
+    openSubmitWindow.innerText = 'Submit';
+    div.appendChild(openSubmitWindow)
+    // openSubmitWindow.addEventListener('click', function() {          
+        
+    // })
+    openSubmitWindow.setAttribute('onclick', 'sendToDrive()');
+    return div
+    // $(x).find('div')[0].prepend(div)
+}
+
+function sendToDrive() {
+    $.ajax({
+        url: 'https://biblicalgreekprogram.org/PWA/googleScript.json?'+Math.random(),
+        dataType: 'json',
+        success: function(data) {
+            let url = data.script;
+            // let html = `<html>${textToExport}</html>`;
+            let html = `<html><head>
+            <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+            <link href="http://127.0.0.1:8080/javachip.css" rel="stylesheet">
+            <style>#submit_wrapper{display:none;}</style>
+            </head>
+            <body>${document.getElementsByClassName('app-section')[0].innerHTML}</body></html>`;
+            let style = `.loader { border: 5px solid #f3f3f3; border-radius: 50%; border-top: 5px solid #3498db; width: 15px; height: 15px; -webkit-animation: spin 1s linear infinite;/* Safari */animation: spin 1s linear infinite;} #status div {padding: 5px; width: 200px;} .center { margin-left: auto; margin-right: auto; }/* Safari */@-webkit-keyframes spin { 0% { -webkit-transform: rotate(0deg); } 100% { -webkit-transform: rotate(360deg); } } @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`;
+            let blob = new Blob([html], { type: "text/html" });
+            let fileNameToSaveAs = localStorage.currentUser + " – " + sheet_id + ".html"; //saves as html
+            var file = new File([blob], fileNameToSaveAs, { type: 'text/plain', lastModified: Date.now() });
+            var fr = new FileReader();
+            fr.fileName = file.name
+            fr.onload = function (e) {
+                e.target.result
+                html = '<input type="hidden" name="data" value="' + e.target.result.replace(/^.*,/, '') + '" >';
+                html += '<input type="hidden" name="mimetype" value="' + e.target.result.match(/^.*(?=;)/)[0] + '" >';
+                html += '<input id="fileName" type="hidden" name="filename" value="' + e.target.fileName + '" >';
+                const submitForm = `<html> <style>${style}</style>
+                    <form action="${url}" id="form" method="post" name="submit_form" align=center>
+                        <div id="data">${html}</div>
+                    </form>
+                    <div id="status"><div class="center">submitting results to Drive...</div></div>
+                    <div class="loader center"></div>
+                    <script> window.onload = function(){document.forms['submit_form'].submit();} </script>
+                    </html>`;
+                var sumbitWindow = new Blob([submitForm], { type: "text/html" });
+                var fileURL = window.URL.createObjectURL(sumbitWindow);
+                window.open(fileURL, '', 'width=500px, height=200px');
+            }
+            fr.readAsDataURL(file);
+        },
+        error: function() {
+            alert('Cannot connect to the server!')
+        }
+    })
 }
