@@ -293,7 +293,7 @@ checkbox monitor, .type li monitor {
     border: 3px #3C7 solid;
     border-radius: 7px;
 }
-.feedback .incorrect, .locked content blank:not(.correct), .locked content select:not(.correct), .locked content lex[answer]:not(.correct) {
+.feedback .incorrect, .locked content blank:not(.correct), .locked content select:not(.correct), .locked content [answer]:not(.correct) {
     margin-bottom: 0px;
     border: 3px solid #dd4539;
     border-radius: 7px;

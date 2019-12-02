@@ -237,6 +237,7 @@ function create_sections(sheet) {
         }
         answer.innerHTML = content_el.innerHTML;
         answer.className = content_el.className;
+        answer.style = content_el.style;
         answer.innerHTML = answer.innerHTML.replace(/%%/g, ' ');
         dnd_able(content_el);
         if (section.main.postscript) {
