@@ -9,6 +9,19 @@ header, section {
     margin: 20px;
     border-radius: 7px;
 }
+timer {
+    float: right;
+    text-align: right;
+}
+header button {
+    float: right;
+}
+@media only screen and (max-width: 400px) {
+    header, section {
+        padding: 10px;
+        margin: 7px;
+    }
+}
 name-tag {
     display: inline-block;
     text-align: center;
@@ -17,10 +30,10 @@ name-tag {
     border-bottom: 1px solid black;
     -webkit-user-modify: read-write-plaintext-only;
 }
-.locked name-tag {
+.show-answers name-tag {
     -webkit-user-modify: read-only;
 }
-.feedback:not(.locked) section.completed {background-color: #CEF6EC}
+.feedback:not(.show-answers) section.completed {background-color: #CEF6EC}
 refresh,restore_page {float: right; cursor: pointer}
 heading {
     font-size: 14pt;
@@ -31,7 +44,8 @@ heading {
 comment {
     font-size: 11pt;
     padding: 3px;
-    margin-left: 20px
+    margin-left: 10px;
+    display: inline-block;
 }
 prologue {
     display: block;
@@ -50,18 +64,22 @@ content {
     padding: 20px;
     border-radius: 7px;
 }
+li {
+    margin-bottom: 5px;
+}
 img {
     border-radius: 7px;
+    width: 100%;
 }
-answer, answer wordbank, .locked refresh {display: none}
-.locked answer {
+answer, answer wordbank, .show-answers refresh {display: none}
+.show-answers answer {
     display: block;
     background-color: ivory;
     margin: 5px;
     padding: 20px;
     border-radius: 7px;
 }
-answer blank, answer lex[answer], .locked lex[answer] {color: blue}
+answer input, answer blank, answer lex[answer], answer box[answer], .show-answers lex[answer], example {color: blue}
 button.finish-button {
     cursor: pointer;
     font-size: 16pt;
@@ -90,9 +108,18 @@ select {
     /* 
     margin-right: 5px; */
 }
-blank {
+.lock.show-answers .type blank {
+    padding-bottom:6px;
+}
+input {
+    width: auto;
+}
+.feedback input, .feedback blank, .no-feedback input, .no-feedback blank, example {
+    letter-spacing: inherit;
+    font-family: inherit;
+    font-size: inherit;
     display: inline-block;
-    width: 125px;
+    min-width: 125px;
     height: 20px;
     margin-top: 3px;
     padding-top: 0px;
@@ -104,12 +131,15 @@ blank {
     margin-bottom: 2px;
     border-bottom: 1px black solid;
 }
-.type blank {
+.type input {
+    background-color: inherit;
     outline: none;
     cursor: text;
     padding:0px;
-    /* padding-top: 3px; */
-    padding-bottom: 4px;
+    padding-top: 2px;/* ?? */
+    /* padding-bottom: 4px; */
+    /* padding-left: 2px;
+    padding-right: 2px; */
     margin-top: -2px;
     -webkit-user-modify: read-write-plaintext-only;
 }
@@ -119,26 +149,26 @@ text {
 .type text, text.type , .type li {
     line-height: 195%;
 }
-.drop text, text.drop , .drop li {
+.selector text, text.selector , .drop text, text.drop , .drop li {
     line-height: 195%;
 }
 .line li {
     margin-bottom: 20px;
 }
-.line blank {
+.line input, .line blank {
     /* margin-bottom: 30px; */
     text-align: left;
     /* width: 100%; */
     width: calc(100% - 30px);
     padding-left: 7px;
 }
-/* .line blank.correct {
+/* .line input.correct {
     margin-bottom: 28px;
 } */
-.cloze-rates button {
+cloze-rates button {
     margin:5px;
 }
-.feedback .cloze-rates {display: none}
+.show-answers cloze-rates {display: none}
 .drop blank {
     white-space: nowrap;
     background-color: transparent;
@@ -151,8 +181,15 @@ text {
 .selector blank, answer .selector select {
     display: none;
 }
-answer .selector blank {display: inline-block;}
-/* .drop blank.dropped {
+answer .selector blank {
+    display: inline-block;
+    padding-bottom: 0px;
+}
+answer .drop blank {
+    padding-bottom: 5px;
+    vertical-align: top;
+}
+/* .drop input.dropped {
     vertical-align: inherit;
     padding: 6px;
 } */
@@ -161,13 +198,14 @@ td, th {
     padding-left: 5px;
     padding-right: 5px;
     border: 1px solid lightslategray;
-    width: 150px;
+    width: 170px;
     height: 40px;
     font-weight: normal;
     text-align: center;
 } /* all td and td[type] before they are correct are the same. this keeps them from 'jumping' when first starting to type. */
 /* tr:first-child td */ th, td:first-child {background-color: #f5f5f5; text-align: left}
-td blank {
+.type td input, .drop td blank, .type td blank {
+    text-align: left;
     margin-left: -3px;
     margin-top: 0px;
     padding: 8px;
@@ -176,6 +214,35 @@ td blank {
     width: calc(100% - 15px);
     border-bottom: 1px solid transparent;
 }
+/* li.dropbox {
+    margin-bottom: 20px;
+} */
+.dropbox div {
+    height: 100px;
+}
+.dropbox div blank {
+    height: calc(100% - 20px);
+    width: calc(100% - 30px);
+    padding: 10px;
+    border: 3px solid lightgrey;
+    border-radius: 5px;
+    white-space: initial;
+}
+.dropbox div blank ref {
+    padding-right: 10px;
+}
+/* div.dropbox td {
+    background-color: initial;
+    padding: 0px;
+}
+div.dropbox tr:last-child td {
+    height: 100px;
+}
+div.dropbox blank {
+    padding: 0px;
+    height:100%;
+    white-space: initial;
+} */
 wordbank { /* word-banks for each section */
     display: block;
     min-height: 33px;
@@ -194,7 +261,11 @@ wordbank { /* word-banks for each section */
     line-height: 200%;
     display: inline-block;
 }
-.drop ref {
+.feedback:not(.lock) .type wordbank ref.crossed {
+    text-decoration: line-through;
+    color: grey;
+}
+.drop wordbank ref {
     line-height: 200%;
     cursor:move;
     background-color: white;
@@ -205,20 +276,32 @@ wordbank { /* word-banks for each section */
     padding-left: 10px;
     padding-right: 10px;
 }
-ref.dropped {
+.drop blank ref/* ref.dropped */ {
+    margin: 3px;
+    padding: 4px;
     background-color: transparent;
     display: inline-block;
     margin-top: -9px;
-    vertical-align: text-bottom;
+    vertical-align: top;
     padding-left: 0px;
     padding-right: 0px;
+}
+.drop td blank ref {
+    vertical-align: initial;
+}
+blank.focused {
+    background-color: whitesmoke;
+    border-radius: 5px;
+}
+.show-answers blank.focused {
+    background-color: inherit;
 }
 wordclick {
     display: block;
     line-height: 175%;
-    padding: 20px;
+    /* padding: 20px;
     padding-left: 40px;
-    padding-right: 40px;
+    padding-right: 40px; */
 }
 lex { /* AUTOMATIC – each word in a <word-click> element */
     /* white-space: pre-wrap; */
@@ -238,6 +321,14 @@ checkbox box {
     vertical-align: top;
     margin-right: 10px;
     border: 3px solid transparent;
+}
+audio-text {display: none;}
+audio-text.show {
+    display: block;
+    padding: 10px;
+}
+answer audio-text {
+    display: block;
 }
 .audio-container .player {
     cursor: pointer!important;
@@ -272,12 +363,13 @@ span.duration {
     margin: -3px;
     padding: 6px;
 }
-answer .audio-container {display: none}
+answer .audio-container monitor, answer .audio-container .player {display: none}
 checkbox .audio-container, li .audio-container {
     display: inline-block;
     position: relative;
     top: 4px;
 }
+answer .audio-container {position: unset;}
 li .audio-container {
     margin-right: 10px;
     padding-top: 15px;
@@ -293,14 +385,23 @@ checkbox monitor, .type li monitor {
     border: 3px #3C7 solid;
     border-radius: 7px;
 }
-.feedback .incorrect, .locked content blank:not(.correct), .locked content select:not(.correct), .locked content [answer]:not(.correct) {
+.feedback .incorrect, .show-answers content input:not(.correct), .show-answers content blank:not(.correct), .show-answers content select:not(.correct), .show-answers content [answer]:not(.correct) {
     margin-bottom: 0px;
     border: 3px solid #dd4539;
     border-radius: 7px;
+    /* padding-left: 2px;
+    padding-right: 2px; */
 }
 .no-feedback lex.correct, .no-feedback lex.incorrect {border: 3px grey solid; border-radius: 7px;}
-
-.locked .finish-button {
+.show-answers .selector blank {
+    padding-bottom: 0px;
+    padding-top: 2px;
+    display: inline-block;
+}
+.show-answers .selector select {
+    display: none;
+}
+.show-answers .finish-button, .feedback .finish-button {
     display: none;
 }
 /* #submitButton {
